@@ -1,11 +1,11 @@
--- NOCSynSim
--- Network on a Chip Synthesisable and Simulation VHDL Model
--- Version: 1.0 
--- Last Update: 2006/10/04
--- Sharif University of Technology
--- Computer Department
--- High Performance Computing Group - Dr.Sarbazi Azad
--- Author: D.Rahmati
+-- PERSIAN-NoC
+-- PERformance SImulation Architecture for Networks-on-chip
+-- Version: 3.0
+-- Last Update: 2019/02/25
+-- High Performance Network Laboratory
+-- School of Electrical and Computer Engineering
+-- University of Tehran,
+-- Author: Reza Hojabr
 
 Library IEEE;
 use IEEE.std_logic_1164.all;
@@ -13,7 +13,7 @@ use IEEE.numeric_std.all;
 use Std.textio.all;
 
 package FilePack is
-	
+
 	type IntVector is array (natural range <>) of integer;
 	Type IntVectorNx1 Is Array(natural range <>) of IntVector(1 to 1);
 
@@ -35,8 +35,8 @@ package FilePack is
 						signal Input		: in  IntVector;
 						signal Finished		: out boolean
 					);
-					
-	procedure WriteFile2(Constant WriteActive : in boolean; 
+
+	procedure WriteFile2(Constant WriteActive : in boolean;
 						constant FileName	: in  string;
 						signal Clock		: in  std_logic;
 						signal WriteEn		: in  std_logic;
@@ -44,37 +44,37 @@ package FilePack is
 						signal Input		: in  IntVector;
 						signal Finished		: out boolean
 					);
-					
+
 	procedure Str_Add(
 						constant len1 : in Integer;
-						constant len2 : in Integer;    
+						constant len2 : in Integer;
 						signal str1: in string;
 						signal str2: in string;
 						signal result: out  string
 					);
 
-  
-		
+
+
 	function Str_Int_Add2(
 		constant len1 : in Integer;
 		str1: in string;
 		val: in Integer
-		) return string;				
-		
+		) return string;
+
 	function Str_Add(
 		constant len1 : in Integer;
-		constant len2 : in Integer;    
+		constant len2 : in Integer;
 		str1: in string;
 		str2: in string
-		) return string;				
-		
+		) return string;
+
 end;
 
 package body FilePack is
 
     procedure Str_Add(
 		constant len1 : in Integer;
-		constant len2 : in Integer;    
+		constant len2 : in Integer;
 		signal str1: in string;
 		signal str2: in string;
 		signal result: out  string)
@@ -88,14 +88,14 @@ package body FilePack is
 				buf(pos) := str1(pos);
 			else
 				buf(pos) := str2(pos-len1);
-			end if;	
+			end if;
 			pos := pos + 1;
 			exit when Pos>len1+len2;
 		end loop;
 		result <= buf;
     end Str_Add; -- procedure
 
-    function Str_Int_Add2( 
+    function Str_Int_Add2(
 		constant len1 : in Integer;
 		str1: in string;
 		val: in Integer
@@ -107,22 +107,22 @@ package body FilePack is
 		pos:=1;
 		loop
 			if (pos=1) Then
-				buf(pos) := character'val(character'pos('0') + val); 
+				buf(pos) := character'val(character'pos('0') + val);
 			elsif (pos<=len1+1) then
-				buf(pos) := str1(pos-1);			
-			end if;	
+				buf(pos) := str1(pos-1);
+			end if;
 			pos := pos + 1;
 			exit when Pos>len1+1;
 		end loop;
 		return buf;
     end Str_Int_Add2; -- function
-    
+
 	function Str_Add(
 		constant len1 : in Integer;
-		constant len2 : in Integer;    
+		constant len2 : in Integer;
 		str1: in string;
 		str2: in string
-		) return string			
+		) return string
     is
 		variable buf : string(len1+len2 downto 1);
 		variable pos : integer := 1;
@@ -130,16 +130,16 @@ package body FilePack is
 		pos:=1;
 		loop
 			if (pos<=len2) then
-				buf(pos) := str2(pos);			
+				buf(pos) := str2(pos);
 			elsif (pos<=len1+len2) then
-				buf(pos) := str1(pos-len2);			
-			end if;	
+				buf(pos) := str1(pos-len2);
+			end if;
 			pos := pos + 1;
 			exit when Pos>len1+len2;
 		end loop;
 		return buf;
     end Str_Add; -- function
-    
+
 	procedure ReadFileV1(constant Len 		: in integer;
 						constant FileName	: in  string;
 						signal Clock		: in  std_logic;
@@ -168,10 +168,10 @@ package body FilePack is
 			Finished <= true;
 			wait;
 		end if;
-		
+
 		l1:while not ENDFILE(inf) loop
 
-			wait until (rising_edge(Clock) and ReadEn='1') or Stop; 
+			wait until (rising_edge(Clock) and ReadEn='1') or Stop;
 			DataValid(Len-1 Downto 0) <= (Others=>'0');
 			exit l1 when Stop;
 
@@ -186,14 +186,14 @@ package body FilePack is
 						end if;
 						outp(i) := int;
 					end loop;
-					output(k) <= outp; 
-				End If;	
+					output(k) <= outp;
+				End If;
 				DataValid(k) <= '1';
 				Exit l1 when (ENDFILE(inf));
 			End Loop;
 		end loop;
-		
-		wait until rising_edge(Clock) or Stop; 
+
+		wait until rising_edge(Clock) or Stop;
 		DataValid(Len-1 Downto 0) <=(Others=>'0');
 		FILE_CLOSE(inf);
 		Finished <= true;
@@ -224,10 +224,10 @@ package body FilePack is
 			Finished <= true;
 			wait;
 		end if;
-		
+
 		l1:while not Stop loop
 
-			wait until (rising_edge(Clock) and WriteEn='1') or Stop; 
+			wait until (rising_edge(Clock) and WriteEn='1') or Stop;
 			exit l1 when Stop;
 
 			for i in Input'range loop
@@ -238,15 +238,15 @@ package body FilePack is
 
 			WRITELINE(outf,Lstr);
 		end loop;
-		
-		wait until rising_edge(Clock) or Stop; 
+
+		wait until rising_edge(Clock) or Stop;
 		FILE_CLOSE(outf);
 		Finished <= true;
 		wait until rising_edge(Clock);
 		return;
 	end procedure;
 
-	procedure WriteFile2(Constant WriteActive : in boolean; 
+	procedure WriteFile2(Constant WriteActive : in boolean;
 						constant FileName	: in  string;
 						signal Clock		: in  std_logic;
 						signal WriteEn		: in  std_logic;
@@ -263,8 +263,8 @@ package body FilePack is
 	begin
 		If (Not WriteActive) Then
 			Return;
-		End If;	
-		
+		End If;
+
 		Finished <= false;
 		FILE_OPEN(fstatus,outf,FileName,WRITE_MODE);
 		if(fstatus/=OPEN_OK) then
@@ -272,10 +272,10 @@ package body FilePack is
 			Finished <= true;
 			wait;
 		end if;
-		
+
 		l1:while not Stop loop
 
-			wait until (rising_edge(Clock) and WriteEn='1') or Stop; 
+			wait until (rising_edge(Clock) and WriteEn='1') or Stop;
 			exit l1 when Stop;
 
 			for i in Input'range loop
@@ -286,8 +286,8 @@ package body FilePack is
 
 			WRITELINE(outf,Lstr);
 		end loop;
-		
-		wait until rising_edge(Clock) or Stop; 
+
+		wait until rising_edge(Clock) or Stop;
 		FILE_CLOSE(outf);
 		Finished <= true;
 		wait until rising_edge(Clock);
@@ -295,8 +295,3 @@ package body FilePack is
 	end procedure;
 
 end;
-
-
-
-
-
