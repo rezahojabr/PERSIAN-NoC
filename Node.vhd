@@ -1,11 +1,11 @@
--- NOCSynSim
--- Network on a Chip Synthesisable and Simulation VHDL Model
--- Version: 1.0
--- Last Update: 2006/10/04
--- Sharif University of Technology
--- Computer Department
--- High Performance Computing Group - Dr.Sarbazi Azad
--- Author: D.Rahmati
+-- PERSIAN-NoC
+-- PERformance SImulation Architecture for Networks-on-chip
+-- Version: 3.0
+-- Last Update: 2019/02/25
+-- High Performance Network Laboratory
+-- School of Electrical and Computer Engineering
+-- University of Tehran,
+-- Author: Reza Hojabr
 
 Library IEEE;
 Use IEEE.STD_LOGIC_1164.All;
@@ -32,7 +32,7 @@ entity Node is
 		PackWidth	: Integer := 8;
 		DataWidth	: Integer := 8;
 		CorWidth	: Integer := 4;
-		
+
 		CurNode		: Integer := 0;
 		PackGen		: std_logic :='1';
 		PackGenNum	: Unsigned(15 Downto 0)
@@ -66,7 +66,7 @@ entity Node is
 
 		--CNOutpData		: Out SignedArrDW(PhyCh-1 downto 0);
 		--CNOutpEn		: Out Unsigned(PhyCh-1 downto 0);
-		
+
 		--AckOut			: Out Unsigned(PhyCh-1 downto 0);
 		--AckIn			: In Unsigned(PhyCh-1 downto 0)
 

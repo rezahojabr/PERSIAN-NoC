@@ -1,11 +1,11 @@
--- NOCSynSim
--- Network on a Chip Synthesisable and Simulation VHDL Model
--- Version: 1.0
--- Last Update: 2006/10/04
--- University of Tehran
--- Computer Department
--- High Performance Computing Group
--- Author: D.Rahmati
+-- PERSIAN-NoC
+-- PERformance SImulation Architecture for Networks-on-chip
+-- Version: 3.0
+-- Last Update: 2019/02/25
+-- High Performance Network Laboratory
+-- School of Electrical and Computer Engineering
+-- University of Tehran,
+-- Author: Reza Hojabr
 
 Library IEEE;
 use IEEE.std_logic_1164.all;

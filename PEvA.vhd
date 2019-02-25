@@ -1,11 +1,11 @@
--- NOCSynSim
--- Network on a Chip Synthesisable and Simulation VHDL Model
--- Version: 1.0 
--- Last Update: 2006/10/04
--- Sharif University of Technology
--- Computer Department
--- High Performance Computing Group
--- Author: D.Rahmati
+-- PERSIAN-NoC
+-- PERformance SImulation Architecture for Networks-on-chip
+-- Version: 3.0
+-- Last Update: 2019/02/25
+-- High Performance Network Laboratory
+-- School of Electrical and Computer Engineering
+-- University of Tehran,
+-- Author: Reza Hojabr
 
 Library IEEE;
 Use IEEE.STD_LOGIC_1164.All;
@@ -38,16 +38,16 @@ entity ReaderV is
 		Reset			: In  Std_Logic;
 
 		FirstTime 		: Buffer Unsigned(ViCh-1 Downto 0);
-		
-		OutpData		: Out SignedArrDW(ViCh-1 downto 0);--(DataWidth-1 downto 0); 
+
+		OutpData		: Out SignedArrDW(ViCh-1 downto 0);--(DataWidth-1 downto 0);
 		OutpEn			: Buffer Unsigned(ViCh-1 downto 0);
 		OutpReady		: In  Unsigned(ViCh-1 downto 0);
 		CreditIn		: In  Unsigned(ViCh-1 downto 0);
 		Sel				: In Unsigned(ViChAddr-1 Downto 0);
-		
+
 		--CNOutpData		: Out Signed(DataWidth-1 downto 0);
 		--CNOutpEn		: Out Std_Logic;
-		
+
 		SentCnt			: Buffer Unsigned(15 Downto 0);
 		ReadFin			: Out Boolean;
 		Stop			: In Boolean
@@ -105,16 +105,16 @@ Signal VCBuffStatus	: UnsignedArr3(ViCh-1 downto 0);
 
 Begin
 
-	OutpData <= Data;					
+	OutpData <= Data;
 
 	ReadFin <= ReadFin1 And ReadFin2 And ReadFin3 And ReadFin4;
-	
+
 	--OutpReady <= To_Unsigned(2**To_Integer(Sel),ViCh);
-	
+
 	Process (Clk)
-	
+
 	Variable VCBuffStatVar	: UnsignedArr3(ViCh-1 downto 0);
-	
+
 		Begin
 			If (Rising_Edge(Clk)) Then
 				If (Reset='1') Then
@@ -122,7 +122,7 @@ Begin
 				Else
 					VCBuffStatVar	:=	VCBuffStatus;
 					For i In 0 To ViCh-1 Loop
-					
+
 						--If (OutpEn(i)='1' And OutpReady(i)='1') Then
 						If (OutpEn(i)='1' And i = To_Integer(Sel)) Then
 							VCBuffStatVar(i) := VCBuffStatVar(i) - 1;
@@ -132,11 +132,11 @@ Begin
 						End If;
 					End Loop;
 					VCBuffStatus	<=	VCBuffStatVar;
-				End If;		
+				End If;
 			End If;
-	End Process;	
-	
-	
+	End Process;
+
+
 	Process (Clk)
 		Begin
 			If (Rising_Edge(Clk)) Then
@@ -144,9 +144,9 @@ Begin
 					TimeCounter <= (Others=>'0');
 				Else
 					TimeCounter <= TimeCounter + 1;
-				End If;		
+				End If;
 			End If;
-	End Process;	
+	End Process;
 
 
 	fr1: ReadFileV1(Len			=> ViCh,
@@ -159,7 +159,7 @@ Begin
 					Finished	=> ReadFin1,
 					DataValid	=> OutpEnPoisson);
 
-	fr2: ReadFileV1(Len			=> ViCh,	
+	fr2: ReadFileV1(Len			=> ViCh,
 					FileName	=> InpFileUniform,
 					Clock		=> Clk,
 					ReadEn		=> ReadF,
@@ -168,8 +168,8 @@ Begin
 					Output		=> DataUniform,
 					Finished	=> ReadFin2,
 					DataValid	=> OutpEnUniform);
-	
-	fr3: ReadFileV1(Len			=> ViCh,	
+
+	fr3: ReadFileV1(Len			=> ViCh,
 					FileName	=> InpFileLARinfo,
 					Clock		=> Clk,
 					ReadEn		=> ReadF,
@@ -178,8 +178,8 @@ Begin
 					Output		=> DataOutputPort,
 					Finished	=> ReadFin3,
 					DataValid	=> OutpEnOutputPort);
-					
-	fr4: ReadFileV1(Len			=> ViCh,	
+
+	fr4: ReadFileV1(Len			=> ViCh,
 					FileName	=> InpFilePackLen,
 					Clock		=> Clk,
 					ReadEn		=> ReadF,
@@ -188,15 +188,15 @@ Begin
 					Output		=> DataPackLen,
 					Finished	=> ReadFin4,
 					DataValid	=> OutpEnPackLen);
-	
+
 	SentCnt <= PackCnt;
 
-	
+
 	Process(Clk)
 	Variable TimeSumVar : Integer;
 	Variable CntLTVar : Integer;
 	Variable PrePackLenVar : Integer;
-	
+
 	Begin
 		If Rising_Edge(Clk) Then
 			If (Reset='1') Then
@@ -214,15 +214,15 @@ Begin
 				ReadPackCnt	<=	(Others=>'0');
 				DisableSend <=	(Others=>'0');
 				is_read		<=	(Others=>'0');
-				
+
 			Else
 
 				For i In 0 To ViCh-1 Loop
-					
+
 					If (FirstTime(i)='0')Then
-						
-						If (to_integer(Counter(i)) >= to_integer(PackLenTemp(i))) Then 
-							
+
+						If (to_integer(Counter(i)) >= to_integer(PackLenTemp(i))) Then
+
 							If (TimeCounter  >= LTCounter(i)-1) And ReadFI(i)='0' And PreReadFI(i)='0' And is_read(i)= '1' Then
 								Counter(i) <= (Others=>'0');
 								is_read(i)<= '0';
@@ -232,50 +232,50 @@ Begin
 								Counter(i)	<=	PackLenTemp(i);
 								DisableSend(i)	<=	'1';
 							End IF;
-							
+
 							If (PackCnt>=PackGenNum)  Then
 								Counter(i)	<=	PackLenTemp(i);
 								DisableSend(i)	<=	'1';
-							End IF;	
+							End IF;
 
 						Elsif (OutpReady(i)='1' And DisableSend(i)='0') Then
-						
+
 							Counter(i) <= Counter(i)+1;
-							
+
 							If (Counter(i)=PackLenTemp(i)-1) And (FirstTime(i)='0') And (PackGen='1') Then
 								PackCnt <= PackCnt+1;
 							End If;
-							
+
 
 						End IF;
-					
+
 					Elsif (OutpReady(i)='1') And (FirstTime(i)='1')Then
 
 							Counter(i) <= Counter(i)+1;
 					End If;
 
-				End Loop;	
+				End Loop;
 
 				PreReadF <= ReadF;
 				TimeSumVar := TimeSum;
-				CntLTVar	:=	CNLTCounter;		
+				CntLTVar	:=	CNLTCounter;
 				For i In 0 To ViCh-1 Loop
 					If (OutpReady(i)='1')  Or (ReadFI(i)='1') Then
 						ReadFI(i) <= '0';
 
-						If (Counter(i)=0) And (ReadFI(i)='0') And (ReadPackCnt<PackGenNum) Then 
+						If (Counter(i)=0) And (ReadFI(i)='0') And (ReadPackCnt<PackGenNum) Then
 							ReadFI(i) <= '1';
-							is_read(i)<= '1';	
-							
+							is_read(i)<= '1';
+
 								ReadPackCnt	<=	ReadPackCnt + 1;
 
 						End If;
 
 						If (Counter(i)=0) Then			--*************************
-							FirstTime(i) <= '0';								
+							FirstTime(i) <= '0';
 						End If;
-					End If;			
-					--------------------- 
+					End If;
+					---------------------
 					PreReadFI(i) <= ReadFI(i);
 					If (PreReadFI(i)='1') Then
 						If (OutpEnPoisson(i)='1') Then -- not necessary
@@ -294,14 +294,14 @@ Begin
 							PrePackLen(i)	<=	PackLen(i);
 							PrePackLenVar	:=	To_Integer(PackLen(i));
 						End If;
-						
+
 						If ((PrePackLenVar)>DataPoisson(i)(1)) Then
-						
+
 							CntLTVar :=	TimeSumVar + ((PrePackLenVar) - DataPoisson(i)(1));
 						Else
 							CntLTVar :=	TimeSumVar;
 						End If;
-							
+
 						--If (CntLTVar>=TimeSumVar) Then
 						--	If ((PrePackLenVar)>DataPoisson(i)(1)) Then
 						--
@@ -316,46 +316,46 @@ Begin
 						--	Else
 						--		CntLTVar :=	TimeSumVar ;
 						--	End If;
-						--End If;	
-					End If;	
-				End Loop;	
+						--End If;
+					End If;
+				End Loop;
 				TimeSum <= TimeSumVar;
 				CNLTCounter	<=	CntLTVar;
-				
+
 			End If;
 		End If;
 	End Process;
-	
---	========================== VCs are sending ===================================	
+
+--	========================== VCs are sending ===================================
 	Process(is_sending)
 		Variable is_sendingVar : Std_Logic;
 	Begin
 		is_sendingVar := '0';
 		For i In 0 To ViCh-1 Loop
-			is_sendingVar := is_sendingVar Or is_sending(i);		
-			
-		End Loop;	
+			is_sendingVar := is_sendingVar Or is_sending(i);
+
+		End Loop;
 		sending <= is_sendingVar;
 	End Process;
---	==============================================================================		
+--	==============================================================================
 
 	Process(Counter,LTCounter,Receiver,FirstTime,ReadFI)
-	
+
 	Variable ReadFVar : Std_Logic;
 	Begin
 		ReadFVar := '0';
 		For i In 0 To ViCh-1 Loop
 			If (Counter(i)=0) Then
-				-- 05, Aug 2006 topology globalization by D.R.	
-				--Data(i) <= To_Signed(Receiver(i),DataWidth) Mod ColNo; --x			
+				-- 05, Aug 2006 topology globalization by D.R.
+				--Data(i) <= To_Signed(Receiver(i),DataWidth) Mod ColNo; --x
 				Data(i) <= 	to_signed(0,DataWidth-72) &
 							to_signed(Receiver(i),8) &
 							Signed(LTCounter(i)(31 Downto 24)) &
 							Signed(LTCounter(i)(23 Downto 16)) &
-							Signed(LTCounter(i)(15 Downto 8)) &						
+							Signed(LTCounter(i)(15 Downto 8)) &
 							Signed(LTCounter(i)(7 Downto 0)) &
-							
-							
+
+
 							to_signed(0, 2) & to_signed(i, 3) & to_signed(LARinfo(i),3) &		--	26 Downto 24	LAR Info
 							to_signed(CurNode,8) 		& 								--	23 Downto 16	Src	 Node
 							to_signed(Receiver(i),8)	&								--	15 Downto 8		Dest Node
@@ -366,54 +366,54 @@ Begin
 				Data(i) <= to_signed(0,DataWidth-6) & Signed(PackLen(i)) & to_signed(1,3);
 			Elsif (Counter(i)=2) Then
 				Data(i) <= to_signed(0,DataWidth-6) & Signed(PackLen(i)) & to_signed(2,3);
-			
+
 			Elsif (Counter(i)=3) Then
 				Data(i) <= to_signed(0,DataWidth-6) & to_signed(5,3) & to_signed(3,3);
 			Elsif (Counter(i)=4) Then
 				Data(i) <= to_signed(0,DataWidth-6) & to_signed(5,3) & to_signed(4,3);
-		
+
 			End If;
-			
-			
-			
+
+
+
 			If ((Counter(i)>=0) And (Counter(i) <= to_integer(PackLenTemp(i))-1) And (FirstTime(i)='0') And (DisableSend(i)='0') And (PackGen='1')) Then
 				OutpEn(i) <= '1';
 				is_sending(i) <= '1';
 			Else
 				OutpEn(i) <= '0';
 				is_sending(i) <= '0';
-			End If;	
+			End If;
 
-			ReadFVar := ReadFVar Or ReadFI(i);		
-			
-		End Loop;	
+			ReadFVar := ReadFVar Or ReadFI(i);
+
+		End Loop;
 		ReadF <= ReadFVar;
 	End Process;
---	================================= Control Network Packet Injection ========================	
+--	================================= Control Network Packet Injection ========================
 	--Process(Counter,OutpEn,OutpReady)
 	--Begin
 	--	--CNOutpData	<=	(Others=>'Z');
 	--	--CNOutpEn	<=	'0';
-	--	
+	--
 	--	For i In 0 To ViCh-1 Loop
-	--		
+	--
 	--		If (OutpEn(i)='1' And OutpReady(i)='1' And Counter(i)=0) Then
-	--		
+	--
 	--			CNOutpData	<=	to_signed(0,DataWidth-72) &
 	--						to_signed(Receiver(i),8) &
 	--						Signed(LTCounter(i)(31 Downto 24)) &
 	--						Signed(LTCounter(i)(23 Downto 16)) &
-	--						Signed(LTCounter(i)(15 Downto 8)) &						
+	--						Signed(LTCounter(i)(15 Downto 8)) &
 	--						Signed(LTCounter(i)(7 Downto 0)) &
-	--						
-	--						
+	--
+	--
 	--						to_signed(0, 2) & to_signed(i, 3) & to_signed(LARinfo(i),3) &		--	26 Downto 24	LAR Info
 	--						to_signed(CurNode,8) 		& 								--	23 Downto 16	Src	 Node
 	--						to_signed(Receiver(i),8)	&								--	15 Downto 8		Dest Node
 	--						to_signed(0, 2) & to_signed(1, 3) &	to_signed(0,3);		-- Header type
 	--			CNOutpEn	<=	'1';
-	--		End If;	
-	--		
+	--		End If;
+	--
 	--	End Loop;
 	--End Process;
 End;
@@ -448,11 +448,11 @@ entity Writer is
 		Clk				: In  Std_Logic:='0';
 		Reset			: In  Std_Logic;
 
-		InpData			: In  Signed(DataWidth-1 downto 0); 
+		InpData			: In  Signed(DataWidth-1 downto 0);
 		InpEn			: In  Std_Logic;
 		InpReady		: Out Std_Logic;
-	
-		ReceCnt			: Buffer Unsigned(15 Downto 0);	
+
+		ReceCnt			: Buffer Unsigned(15 Downto 0);
 		AveReceTime		: Out Unsigned(19 Downto 0);
 		SumTimeData		: Buffer Integer;
 		Number			: Buffer Integer;
@@ -475,7 +475,7 @@ Signal TimeDataTemp:	Integer;
 signal WriteTime, LogWriteTime:	std_logic;
 signal WriteFin1:	boolean;
 signal WriteFin2:	boolean;
-Signal InpPackCounter :	Unsigned(PackWidth-1 Downto 0);	
+Signal InpPackCounter :	Unsigned(PackWidth-1 Downto 0);
 Signal TimeCounter :  	Unsigned(31 Downto 0);
 signal PreInpEn:		std_logic;
 Signal PackFinishedFlag : Std_Logic:='0';
@@ -491,29 +491,29 @@ Begin
 					TimeCounter <= (Others=>'0');
 				Else
 					TimeCounter <= TimeCounter + 1;
-				End If;		
+				End If;
 			End If;
-	End Process;	
+	End Process;
 
 
-		fw1: WriteFile2(WriteActive => DumpTimePackFile,	
+		fw1: WriteFile2(WriteActive => DumpTimePackFile,
 						FileName	=> OutpFilePack,
 						Clock		=> Clk,
 						WriteEn		=> LogWriteTime,--InpEn,
 						Stop		=> Stop,
 						Input		=> SaveData,
 						Finished	=> WriteFin1);
-					
-		fw2: WriteFile2(WriteActive => DumpTimePackFile,	
+
+		fw2: WriteFile2(WriteActive => DumpTimePackFile,
 						FileName	=> OutpFileTime,
 						Clock		=> Clk,
 						WriteEn		=> WriteTime,
 						Stop		=> Stop,
 						Input		=> TData,
 						Finished	=> WriteFin2);
-		
+
 		SaveData(1)	<=	ReceivedCnt+1;
-		SaveData(2)	<=	SrcNode;	
+		SaveData(2)	<=	SrcNode;
 		SaveData(3)	<=	RecNode;
 		SaveData(4)	<=	VC_number;
 		SaveData(5)	<=	PackLen;
@@ -527,24 +527,24 @@ Begin
 		TData(3) <= SumTimeData/Number When (Number/=0) Else 0;
 		AveReceTime <= To_Unsigned(SumTimeData/Number,20) When (Number/=0) Else (Others=>'0');
 		InpReady <= '1';
-		
+
 		ReceivedCnt	<=	To_Integer(ReceCnt);
-		
+
 		LogWriteTime	<=	'1' When (PreInpEn='1' And InpPackCounter=PackLen-1) Else '0';
 		------
 		------
 		--End Process;
 		Process (Clk)
-        variable my_line : line; 
+        variable my_line : line;
 		Begin
 			If (Rising_Edge(Clk)) Then
 				If (Reset='1') Then
 					InpPackCounter <= (Others=>'0');
-					WriteTime <= '0';	
-					
+					WriteTime <= '0';
+
 					SumTimeData <= 0;
 					--
-					ReceCnt	<= (Others=>'0');	
+					ReceCnt	<= (Others=>'0');
 					ErrNo <= 0;
 					PackLen <= 1;
 				Else
@@ -554,11 +554,11 @@ Begin
 					--
 					If (InpEn='1') Then
 						InpPackCounter <= InpPackCounter + 1;
-						
+
 						If(InpPackCounter>=PackLen-1) Then
 							InpPackCounter <= (Others=>'0');
 							PackFinishedFlag<='1';
-						End If;	
+						End If;
 						-- added by R.Hojabr:
 						If(InpPackCounter=0) Then
 
@@ -568,48 +568,48 @@ Begin
 								RecNode		<=	to_integer(Unsigned(InpData(15 Downto 8)));
 								PackLen		<=	to_integer(Unsigned(InpData(5 Downto 3)));
 								VC_number	<=	to_integer(Unsigned(InpData(29 Downto 27)));
-								
+
 								IF (InpData(5)='1') Then					-- If incoming packet is a long packet (it has 5 flits)
 									InpPackCounter <= InpPackCounter + 1;
 								Else										-- If incoming packet is a short packet (it has 1 flit)
 									InpPackCounter <= (Others=>'0');
 								End If;
 							End If;
-							
-						End If;	
-	
+
+						End If;
+
 					End If;
-					
+
 					--If(InpPackCounter>=PackLen-1 And PackLen>1) Then
 					--If(InpPackCounter>=PackLen-1 And InpEn='0') Then
 					--		InpPackCounter <= (Others=>'0');
 					--		--PackFinishedFlag<='1';
 					--End If;
-					
-					WriteTime <= '0';		
-					
-					
+
+					WriteTime <= '0';
+
+
 					If ((PreInpEn='1' And InpPackCounter=PackLen-1 And PackLen=1) Or (InpEn='1' And InpPackCounter=PackLen-1 And PackLen>1)) Then		--***************
-					
+
 						WriteTime <= '1';
 						--
 						ReceCnt <= ReceCnt +1;
-						
+
 						If (PackLen>1) Then
 							TimeDataTemp	<=	to_integer(TimeCounter)-TimeData;
 							SumTimeData <= SumTimeData+to_integer(TimeCounter)-TimeData;
 						Else
 							TimeDataTemp	<=	to_integer(TimeCounter)-TimeData;
 							SumTimeData <= SumTimeData+to_integer(TimeCounter)-TimeData-1;
-						End If;	
-						
+						End If;
+
 						--TimeDataTemp	<=	to_integer(TimeCounter)-TimeData;
 						--SumTimeData <= SumTimeData+to_integer(TimeCounter)-TimeData-1;
 
 
 						If(ReceCnt<(IgnorePercent*PackGenNum)/100) Then
 							SumTimeData <= 0;
-						End IF;	
+						End IF;
 						--
 						If (CurNode/=RecNode) Then
 
@@ -623,13 +623,13 @@ Begin
                				writeline(output, my_line);               -- write to "output"
                				ErrNo <= ErrNo+1;
                				If(ErrNo>=3) Then
-								assert false report "Simulation Failure" severity failure;               				
+								assert false report "Simulation Failure" severity failure;
 							End if;
 						End If;
 					End If;
-				End If;		
+				End If;
 			End If;
-		End Process;	
+		End Process;
 End;
 
 Library IEEE;
@@ -647,14 +647,14 @@ entity PEDeMux is
 		Clk			: In  std_logic;
 		Reset		: In  std_logic;
 		Sel			: In  Unsigned(ViChAddr-1 Downto 0);
-		
-		InpData		: In  Signed(DataWidth-1 downto 0); 
+
+		InpData		: In  Signed(DataWidth-1 downto 0);
 		InpEn		: In  Std_Logic;
 		InpReady	: Out Unsigned(ViCh-1 downto 0); --Std_Logic;
 
 		OutpData	: Out SignedArrDW(ViCh-1 downto 0); --? DataWidth=8
 		OutpEn		: Out Unsigned(ViCh-1 downto 0);
-		OutpReady	: In  Unsigned(ViCh-1 downto 0)	
+		OutpReady	: In  Unsigned(ViCh-1 downto 0)
 	);
 End;
 
@@ -668,8 +668,8 @@ Begin
 			InpReady <= (Others=>'0');
 			OutpData <= (Others=>(Others=>'0'));
 			OutpEn <= (Others=>'0');
-		Else	
-			For i In 0 To ViCh-1 Loop  
+		Else
+			For i In 0 To ViCh-1 Loop
 				InpReady(i) <= OutpReady(i);
 				OutpData(i) <= (Others=>'Z');
 				OutpEn(i) <= '0';
@@ -677,8 +677,8 @@ Begin
 					OutpData(i) <= InpData;
 					OutpEn(i) <= InpEn;
 				End If;
-			End Loop;	
-		End If;	
+			End Loop;
+		End If;
 	End Process;
 
 End;
@@ -704,34 +704,34 @@ entity Selector is --a324
 	);
 End;
 
-	
+
 Architecture behavioral of Selector is
 
 Begin
 
-	
+
 	--Process (Clk)
 	Process (InpEn,OutpReady)
 	Variable Assigned : Std_Logic;
 	Variable SelV, cnt : Integer;
 	Variable VarSel		: Unsigned(ViChAddr-1 Downto 0);
 	Begin
-	
+
 		--If (Rising_Edge(Clk)) Then
 			If (Reset='1') Then
 				Sel <= (Others=>'0');
 			Else
-	
+
 				PE_MuxSelector(
 								VarSel	,
-							
+
 								Sel		,
 								FirstTime,
 								InpEn	,
 								OutpReady	);
-				Sel	<=	VarSel;				
+				Sel	<=	VarSel;
 			End If;
-		--End If;		
+		--End If;
 	End Process;
 End;
 
@@ -752,14 +752,14 @@ entity PEMux is
 		Clk			: In  std_logic;
 		Reset		: In  std_logic;
 		Sel			: Buffer Unsigned(ViChAddr-1 Downto 0);
-		
+
 		FirstTime	: In Unsigned(ViCh-1 Downto 0);
-		
+
 		InpData		: In  SignedArrDW(ViCh-1 downto 0); --? DataWidth=8
 		InpEn		: In  Unsigned(ViCh-1 downto 0);
-		InpReady	: Out Unsigned(ViCh-1 downto 0);	
+		InpReady	: Out Unsigned(ViCh-1 downto 0);
 
-		OutpData	: Out Signed(DataWidth-1 downto 0); 
+		OutpData	: Out Signed(DataWidth-1 downto 0);
 		OutpEn		: Out Std_Logic;
 		OutpReady	: In  Unsigned(ViCh-1 downto 0) --Std_Logic
 	);
@@ -773,22 +773,22 @@ Signal req		:	Unsigned(ViCh-1 Downto 0);
 
 Begin
 
-	
+
 	Process(Sel_Int,Reset,OutpReady)
 	Variable Tmp : Integer;
 	Begin
 		If (Reset='1') Then
 			InpReady <= (Others=>'0');
-		Else	
-			For i In 0 To ViCh-1 Loop  
+		Else
+			For i In 0 To ViCh-1 Loop
 				InpReady(i) <= '0';
 				If (Sel_Int=i) Then
 					InpReady(i) <= OutpReady(i);
 				End If;
-			End Loop;	
-		End If;	
+			End Loop;
+		End If;
 	End Process;
-	
+
 	Process (Sel_Int,Reset,OutpReady,InpEn,InpData)
 	Begin
 		If (Reset='1') Then
@@ -796,24 +796,24 @@ Begin
 			OutpEn <= '0';
 		Else
 			OutpData <= (Others=>'Z');
-			OutpEn <= '0';						
+			OutpEn <= '0';
 			For i In 0 To ViCh-1 Loop
 				If (Sel_Int=i) And (InpEn(i)='1') And (OutpReady(i)='1')Then
 				--If (Sel_Int=i) And (InpEn(i)='1') Then
 					OutpData <= InpData(i);
-					OutpEn <= '1';			
+					OutpEn <= '1';
 				End If;
-			End Loop;	
+			End Loop;
 		End If;
 	End Process;
 	Sel <= Sel_Int;
 
 
-	
-	c1:Entity Work.Selector 
+
+	c1:Entity Work.Selector
 		Generic Map(
 			ViChAddr	,
-			ViCh		
+			ViCh
 		)
 		Port Map(
 			Clk			,
@@ -821,7 +821,7 @@ Begin
 			Sel_Int		,
 			FirstTime	,
 			InpEn		,
-			OutpReady	
+			OutpReady
 	);
 End;
 
@@ -855,23 +855,23 @@ entity PEv is
 		Clk				: In  Std_Logic:='0';
 		Reset			: In  Std_Logic;
 
-		InpData			: In  Signed(DataWidth-1 downto 0); 
+		InpData			: In  Signed(DataWidth-1 downto 0);
 		InpEn			: In  Std_Logic;
 		CreditOut		: Out Unsigned(ViCh-1 downto 0);
-		InpSel			: In  Unsigned(ViChAddr-1 downto 0); 
+		InpSel			: In  Unsigned(ViChAddr-1 downto 0);
 
-		OutpData		: Out Signed(DataWidth-1 downto 0); 
+		OutpData		: Out Signed(DataWidth-1 downto 0);
 		OutpEn			: Buffer Std_Logic;
 		OutpReady		: In  Unsigned(ViCh-1 downto 0);
 		CreditIn		: In  Unsigned(ViCh-1 downto 0);
 		OutpSel			: Buffer Unsigned(ViChAddr-1 downto 0);
-		
+
 		--CNOutpData		: Out Signed(DataWidth-1 downto 0);
 		--CNOutpEn		: Out Std_Logic;
-		
+
 		SentCnt			: Out Unsigned(15 Downto 0);
 		ReceCnt			: Out Unsigned(15 Downto 0);
-		
+
 		AveReceTime		: Out Unsigned(19 Downto 0);
 		StopSim			: In Std_Logic
 	);
@@ -883,7 +883,7 @@ Signal OutpDataArr	: SignedArrDW(ViCh-1 downto 0);
 Signal OutpEnArr	: Unsigned(Vich-1 Downto 0);
 Signal OutpReadyArr	: Unsigned(Vich-1 Downto 0);
 
-Signal	InpDataArr	: SignedArrDW(ViCh-1 downto 0); 
+Signal	InpDataArr	: SignedArrDW(ViCh-1 downto 0);
 Signal	InpEnArr	: Unsigned(Vich-1 Downto 0);
 Signal	InpReadyArr	: Unsigned(Vich-1 Downto 0);
 
@@ -892,59 +892,59 @@ signal Stop			: Boolean;
 signal ReadFin		: boolean;
 signal WriteFin		: boolean;
 
-Signal ReceCntArr		: UnsignedArr16(ViCh-1 Downto 0);	
+Signal ReceCntArr		: UnsignedArr16(ViCh-1 Downto 0);
 Signal AveReceTimeArr	: UnsignedArr20(ViCh-1 Downto 0);
 Signal SumTimeDataArr	: IntVector(ViCh-1 Downto 0);
 Signal NumberArr		: IntVector(ViCh-1 Downto 0);
 signal WriteFinArr		: BoolArr(ViCh-1 Downto 0);
 
-Signal FirstTime : Unsigned(ViCh-1 Downto 0); 
+Signal FirstTime : Unsigned(ViCh-1 Downto 0);
 Begin
 
 Stop <= (StopSim='1') Or (ReadFin And WriteFin);
 CreditOut	<=	InpEnArr;
---CreditOut	<=	(Others=>'1');	
+--CreditOut	<=	(Others=>'1');
 
-c1: Entity Work.ReaderV 
+c1: Entity Work.ReaderV
 	Generic Map(
 		InpFilePoisson	,
 		InpFileUniform	,
 		InpFileLARinfo	,
 		InpFilePackLen	,
-		
+
 		DataWidth		,
-		ViChAddr		,	
-		ViCh			,	
+		ViChAddr		,
+		ViCh			,
 		--
 		CurNode			,
 		--Y				,
-		PackWidth		,	
-		PackGen			,	
-		PackGenNum		,	
+		PackWidth		,
+		PackGen			,
+		PackGenNum		,
 		PackSize
 	)
-	
+
 	Port Map(
-		Clk				=> Clk			,	
-		Reset			=> Reset		,	
+		Clk				=> Clk			,
+		Reset			=> Reset		,
 
 		FirstTime 		=> FirstTime,
-		
+
 		OutpData		=> OutpDataArr	,
-		OutpEn			=> OutpEnArr	,	
-		OutpReady		=> OutpReadyArr	,	
+		OutpEn			=> OutpEnArr	,
+		OutpReady		=> OutpReadyArr	,
 		CreditIn		=> CreditIn		,
 		Sel				=>	OutpSel,
-		
+
 		--CNOutpData		=>	CNOutpData	,
 		--CNOutpEn		=>	CNOutpEn	,
-		
-		SentCnt			=> SentCnt		,	
-		ReadFin			=> ReadFin		,	
-		Stop			=> Stop			
+
+		SentCnt			=> SentCnt		,
+		ReadFin			=> ReadFin		,
+		Stop			=> Stop
 	);
-	
-c2: Entity Work.PEMux 
+
+c2: Entity Work.PEMux
 		Generic Map(
 			DataWidth	,
 			ViChAddr	,
@@ -954,34 +954,34 @@ c2: Entity Work.PEMux
 			Clk		   						,
 			Reset	   						,
 			OutpSel	   						,
-			
+
 			FirstTime						,
-			
+
 			OutpDataArr 					,
 			OutpEnArr	  					,
 			OutpReadyArr					,
-	
+
 			OutpData						,
 			OutpEn  						,
-			OutpReady	  					
+			OutpReady
 	);
 
-mx2: For j in 0 to ViCh-1 Generate	
+mx2: For j in 0 to ViCh-1 Generate
 
 c3: Entity Work.Writer
 		Generic Map(
 			--Str_Add(16,2,Str_Int_Add2(15,OutpFilePack,j),"--"),
 			Str_Int_Add2(15,OutpFilePack,j),
-			Str_Int_Add2(15,OutpFileTime,j)	, 
+			Str_Int_Add2(15,OutpFileTime,j)	,
 			DataWidth		,
-			ViChAddr		,	
-			ViCh			,	
+			ViChAddr		,
+			ViCh			,
 			--
-			CurNode			,	
+			CurNode			,
 			--Y				,
-			PackWidth		,	
-			PackGen			,	
-			PackGenNum		,	
+			PackWidth		,
+			PackGen			,
+			PackGenNum		,
 			PackSize
 		)
 		Port Map(
@@ -992,15 +992,15 @@ c3: Entity Work.Writer
 			InpEn			=> InpEnArr(j)		,
 			InpReady		=> InpReadyArr(j)	,
 
-			ReceCnt			=> ReceCntArr(j)	,	
-			AveReceTime		=> AveReceTimeArr(j),	
-			SumTimeData		=> SumTimeDataArr(j),		
-			Number			=> NumberArr(j),			
-			
+			ReceCnt			=> ReceCntArr(j)	,
+			AveReceTime		=> AveReceTimeArr(j),
+			SumTimeData		=> SumTimeDataArr(j),
+			Number			=> NumberArr(j),
+
 			WriteFin		=> WriteFinArr(j)		,
-			Stop			=> Stop			
+			Stop			=> Stop
 	);
-	
+
 End Generate;
 
 Process(ReceCntArr,AveReceTimeArr,WriteFinArr,SumTimeDataArr,NumberArr)
@@ -1021,17 +1021,17 @@ Begin
 			SumReceTimeVar := SumReceTimeVar + SumTimeDataArr(i);
 			NumberVar := NumberVar + NumberArr(i);
 			WriteFinVar := WriteFinVar And WriteFinArr(i);
-	End Loop;	
+	End Loop;
 	ReceCnt <= To_Unsigned(ReceCntVar,16);
 	If (NumberVar/=0) Then
-		AveReceTime <= To_Unsigned(SumReceTimeVar/NumberVar,20); 
-	Else 
+		AveReceTime <= To_Unsigned(SumReceTimeVar/NumberVar,20);
+	Else
 		AveReceTime <= (Others=>'0');
 	End If;
 	WriteFin <= WriteFinVar;
 End Process;
-	
-c4: Entity Work.PEDeMux 
+
+c4: Entity Work.PEDeMux
 		Generic Map(
 			DataWidth	,
 			ViChAddr	,
@@ -1042,12 +1042,12 @@ c4: Entity Work.PEDeMux
 			Reset		,
 			InpSel		,
 
-			InpData		, 
+			InpData		,
 			InpEn		,
-			Open	, 
+			Open	,
 
-			InpDataArr	, 
+			InpDataArr	,
 			InpEnArr	,
-			InpReadyArr		
+			InpReadyArr
 	);
 End;

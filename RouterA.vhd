@@ -1,3 +1,12 @@
+-- PERSIAN-NoC
+-- PERformance SImulation Architecture for Networks-on-chip
+-- Version: 3.0
+-- Last Update: 2019/02/25
+-- High Performance Network Laboratory
+-- School of Electrical and Computer Engineering
+-- University of Tehran,
+-- Author: Reza Hojabr
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -597,7 +606,7 @@ entity VirtualChannel is --a326
 		NextHopLAR	: Out	signed(2 downto 0);		--Modified by R.Hojabr
 		VC_number	: Out signed(2 downto 0);		--Modified by R.Hojabr
 		PackLen		: Buffer signed(2 downto 0);
-		
+
 
 		ValidHeader : Out Std_Logic;
 
@@ -692,14 +701,14 @@ Begin
 	FIFO1_Read	<=	(FIFO2_Read  And (Not FIFO1_Empty)) Or
 					(ValidHeaderDown And FIFO2_Empty );
 
-	
+
 	CreditOut	<=	FIFO1_Read;
 
 	FIFO2_write	<=	FIFO1_Read;
 
 	OutpEn <= IsChAssigned And (Not FIFO2_Empty);
 
-	
+
 
 	DestNode 	<=	signed(Internal_Data(15 Downto 8))	When(Unsigned(Internal_Data(2 Downto 0))=0 And FIFO1_Empty='0'); -- Else (Others=>'Z');
 	SrcNode		<=	signed(Internal_Data(23 Downto 16))	When(Unsigned(Internal_Data(2 Downto 0))=0 And FIFO1_Empty='0'); -- Else (Others=>'Z');
@@ -720,16 +729,16 @@ Begin
 			Elsif (FIFO1_Empty='0' AND FIFO1_Read='1' AND Unsigned(Internal_Data(2 Downto 0))=0) Then
 				PackSize	<= to_unsigned(0,5) & unsigned(Internal_Data(5 Downto 3));
 				PackLen		<=	Signed(Internal_Data(5 Downto 3));
-			
+
 			End If;
 
-			
+
 		------------------------------------------------------------------------------------------------------
-			
+
 			If (OutpEn='1' And IsChAssigned='1' And PackSize>1 ) Then
 
 				PackCounterOut <= PackCounterOut+1;
-		
+
 				If (PackCounterOut>=PackSize-1) Then
 
 					PackCounterOut <= (Others=>'0');
@@ -835,7 +844,7 @@ Use IEEE.NUMERIC_STD.All;
 
 Use Work.ConnectionPack.All;
 
-entity Mux is 
+entity Mux is
 	generic(
 		DataWidth	: Integer := 8;
 		ViChAddr	: Integer := 1;
@@ -990,7 +999,7 @@ VC:Entity Work.VirtualChannel
 		NextHopLAR			=>	NextHopLARinfoArr(i),
 		VC_number			=>	VC_numberArr(i)	,
 		PackLen				=>	PackLenArr(i)	,
-		
+
 
 		ValidHeader			=>	ValidHeaderArr(i),
 		CreditOut			=>	CreditOut(i),

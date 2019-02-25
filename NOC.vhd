@@ -1,11 +1,11 @@
--- NOCSynSim
--- Network on a Chip Synthesisable and Simulation VHDL Model
--- Version: 1.0 
--- Last Update: 2006/10/04
--- Sharif University of Technology
--- Computer Department
--- High Performance Computing Group - Dr.Sarbazi Azad
--- Author: D.Rahmati
+-- PERSIAN-NoC
+-- PERformance SImulation Architecture for Networks-on-chip
+-- Version: 3.0
+-- Last Update: 2019/02/25
+-- High Performance Network Laboratory
+-- School of Electrical and Computer Engineering
+-- University of Tehran,
+-- Author: Reza Hojabr
 
 Library ieee;
 use ieee.numeric_std.all;
@@ -23,7 +23,7 @@ Generic(
 
 		PackWidth	: Integer := 8;
 		DataWidth	: Integer := 8;
-		AddrWidth	: Integer := 4;	
+		AddrWidth	: Integer := 4;
 
 		RoChAddr		: Integer := 1;
 		PhyChAddr		: Integer := 2;
@@ -36,7 +36,7 @@ Generic(
 		PoissonDelayStr : String(3 Downto 1):="500";
 		InpFileUniform  : StrArr6(0 to ColNo*RowNo-1);--:=(Others=>(Others=>"_"));
 
-		
+
  		PackGenNum : Unsigned(15 Downto 0) := To_Unsigned(5,16);
  		PackGen    : Unsigned(RowNo*ColNo-1 Downto 0):=(Others=>'1')
 		);
@@ -62,12 +62,12 @@ Constant TStr : String(5 Downto 1) :="Time-";
 Constant OutpFileTimeStr   : String(9 Downto 1) := Str_Add(5,4,TStr,InpFilePoissonStr); --"Time-500-";
 Constant LARStr : String(4 Downto 1) :="LAR-";
 Constant LenStr : String(4 Downto 1) :="Len-";
-	
-																		
+
+
 Function Index(	j,i		: Integer;
 				ColNo,RowNo	: Integer )
 						return Integer Is
-									
+
 variable Res:	Integer;
 variable ii,jj: Integer;
 begin
@@ -85,12 +85,12 @@ begin
 	if (ii=ColNo) Then
 		ii:=0;
 	End If;
-	
-	--Res := (j mod ColNo)*ColNo+(i mod ColNo); 
-	Res := jj*ColNo+ii; 
+
+	--Res := (j mod ColNo)*ColNo+(i mod ColNo);
+	Res := jj*ColNo+ii;
 	return Res;
-end;								
-		
+end;
+
 Type UnsignedArrViChAddr is array (natural range <>) of Unsigned(ViChAddr-1 Downto 0);
 Type UnsignedArrPhyxVi is array (natural range <>) of Unsigned(PhyCh*ViCh-1 Downto 0); --PhyCh*ViCh=4*1
 Type SignedArrMNxPhyChxDataWidth is array(ColNo*RowNo-1 Downto 0) of SignedArrDW(PhyCh-1 downto 0);
@@ -121,7 +121,7 @@ Signal	Sel2	: UnsignedArrMNxPhyxViChAddr; --ers=>" ? ViChAddr=1
 --Signal	Ack	: UnsignedArrPhy(ColNo*RowNo-1 downto 0):=(Others=>(Others=>'0'));
 --Signal	Ack2: UnsignedArrPhy(ColNo*RowNo-1 downto 0):=(Others=>(Others=>'0'));
 
-begin 
+begin
 
 mg1: For j in 0 to RowNo-1 Generate
 	mg2: For i in 0 to ColNo-1 Generate
@@ -132,49 +132,49 @@ mg1: For j in 0 to RowNo-1 Generate
 						   ,Data(Index(j-1,i,ColNo,RowNo))(3),Data(Index(j,i-1,ColNo,RowNo))(2));
 	En2(j*ColNo+i) <= 	(En(Index(j+1,i,ColNo,RowNo))(1),En(Index(j,i+1,ColNo,RowNo))(0)
 						   ,En(Index(j-1,i,ColNo,RowNo))(3),En(Index(j,i-1,ColNo,RowNo))(2));
-						   
+
 	--CNRMD1InpData(j*ColNo+i) <= (CNROutpData(Index(j+1,i,ColNo,RowNo))(1),CNROutpData(Index(j,i+1,ColNo,RowNo))(0)
 	--					   ,CNROutpData(Index(j-1,i,ColNo,RowNo))(3),CNROutpData(Index(j,i-1,ColNo,RowNo))(2));
 	--CNRMD1InpEn(j*ColNo+i) <= 	(CNROutpEn(Index(j+1,i,ColNo,RowNo))(1),CNROutpEn(Index(j,i+1,ColNo,RowNo))(0)
-	--					   ,CNROutpEn(Index(j-1,i,ColNo,RowNo))(3),CNROutpEn(Index(j,i-1,ColNo,RowNo))(2));						   
+	--					   ,CNROutpEn(Index(j-1,i,ColNo,RowNo))(3),CNROutpEn(Index(j,i-1,ColNo,RowNo))(2));
     --
-	--					   
+	--
 	--	Ack(Index(j+1,i,ColNo,RowNo))(1) 	<= Ack2(j*ColNo+i)(3);
 	--	Ack(Index(j,i+1,ColNo,RowNo))(0) 	<= Ack2(j*ColNo+i)(2);
 	--	Ack(Index(j-1,i,ColNo,RowNo))(3) 	<= Ack2(j*ColNo+i)(1);
 	--	Ack(Index(j,i-1,ColNo,RowNo))(2) 	<= Ack2(j*ColNo+i)(0);
-		
+
 	ag3  : For k in 0 to ViCh-1 Generate
 		--Ready(Index(j+1,i,ColNo,RowNo))(1 *ViCh+k) 	<= Ready2(j*ColNo+i)(3 *ViCh+k);
 		--Ready(Index(j,i+1,ColNo,RowNo))(0 *ViCh+k) 	<= Ready2(j*ColNo+i)(2 *ViCh+k);
 		--Ready(Index(j-1,i,ColNo,RowNo))(3 *ViCh+k) 	<= Ready2(j*ColNo+i)(1 *ViCh+k);
 		--Ready(Index(j,i-1,ColNo,RowNo))(2 *ViCh+k) 	<= Ready2(j*ColNo+i)(0 *ViCh+k);
-		
-		
-		
+
+
+
 		-- ========================== Credit signals ================================
 		Credit(Index(j+1,i,ColNo,RowNo))(1 *ViCh+k) 	<= Credit2(j*ColNo+i)(3 *ViCh+k);
 		Credit(Index(j,i+1,ColNo,RowNo))(0 *ViCh+k) 	<= Credit2(j*ColNo+i)(2 *ViCh+k);
 		Credit(Index(j-1,i,ColNo,RowNo))(3 *ViCh+k) 	<= Credit2(j*ColNo+i)(1 *ViCh+k);
 		Credit(Index(j,i-1,ColNo,RowNo))(2 *ViCh+k) 	<= Credit2(j*ColNo+i)(0 *ViCh+k);
-	End Generate;	
-	
+	End Generate;
+
 	Sel2(j*ColNo+i) <=	(Sel(Index(j+1,i,ColNo,RowNo))(1),Sel(Index(j,i+1,ColNo,RowNo))(0)
-						   ,Sel(Index(j-1,i,ColNo,RowNo))(3),Sel(Index(j,i-1,ColNo,RowNo))(2));					   
-m1: Entity Work.Node 
+						   ,Sel(Index(j-1,i,ColNo,RowNo))(3),Sel(Index(j,i-1,ColNo,RowNo))(2));
+m1: Entity Work.Node
 	Generic Map(
-		--InpFilePoisson	=> InpFilePoisson(j*ColNo+i)	,	
-		--InpFileUniform	=> InpFileUniform(j*ColNo+i)	,	
+		--InpFilePoisson	=> InpFilePoisson(j*ColNo+i)	,
+		--InpFileUniform	=> InpFileUniform(j*ColNo+i)	,
 		--OutpFilePack	=> OutpFilePack(j*ColNo+i)		 ,
 		--OutpFileTime	=> OutpFileTime(j*ColNo+i)		,
-	
-		InpFilePoisson	=>	Str_Add(4,6,InpFilePoissonStr,InpFileUniform(j*ColNo+i))	,	
+
+		InpFilePoisson	=>	Str_Add(4,6,InpFilePoissonStr,InpFileUniform(j*ColNo+i))	,
 		InpFileUniform	=>	InpFileUniform(j*ColNo+i)	,
-		InpFileLAR		=>	Str_Add(4,6,LARStr,InpFileUniform(j*ColNo+i))	,	
-		InpFilePackLen	=>	Str_Add(4,6,LenStr,InpFileUniform(j*ColNo+i))	,		
+		InpFileLAR		=>	Str_Add(4,6,LARStr,InpFileUniform(j*ColNo+i))	,
+		InpFilePackLen	=>	Str_Add(4,6,LenStr,InpFileUniform(j*ColNo+i))	,
 		OutpFilePack	=>	Str_Add(9,6,OutpFilePackStr,InpFileUniform(j*ColNo+i))		 ,
 		OutpFileTime	=>	Str_Add(9,6,OutpFileTimeStr,InpFileUniform(j*ColNo+i))		,
-	
+
 		ViChAddr	=> ViChAddr		,
 		PhyRoChAddr	=> PhyRoChAddr	,
 		--			   --
@@ -187,33 +187,33 @@ m1: Entity Work.Node
 		DataWidth	=> DataWidth	,
 		--			   --
 		CurNode		=> j*ColNo+i	,
-		--Y			=> j			,	
+		--Y			=> j			,
 		PackGen		=> PackGen(j*ColNo+i) ,
 		PackGenNum	=> PackGenNum
 		)
 	Port Map(
-		Clk				=> Clk			,	
-		Reset			=> Reset		,	
+		Clk				=> Clk			,
+		Reset			=> Reset		,
 
-		InpData			=> Data2(j*ColNo+i)	,	
-		InpEn			=> En2(j*ColNo+i)		,	
-		
+		InpData			=> Data2(j*ColNo+i)	,
+		InpEn			=> En2(j*ColNo+i)		,
+
 		CreditOut		=> Credit2(j*ColNo+i)	,
-		InpSel			=> Sel2(j*ColNo+i)		,		
+		InpSel			=> Sel2(j*ColNo+i)		,
 
 		OutpData		=> Data(j*ColNo+i),
-		OutpEn			=> En(j*ColNo+i)	,	
-		
+		OutpEn			=> En(j*ColNo+i)	,
+
 		CreditIn		=> Credit(j*ColNo+i),
 		OutpSel			=> Sel(j*ColNo+i)	,
-		
+
 		SentCnt			=> SentCnt(j*ColNo+i)	,
 		ReceCnt			=> ReceCnt(j*ColNo+i)	,
 		AveReceTime		=> AveReceTime(j*ColNo+i),
 		--sim
-		StopSim			=> StopSim	
+		StopSim			=> StopSim
 	);
-	End Generate;	
-End Generate;	
+	End Generate;
+End Generate;
 
 End;
