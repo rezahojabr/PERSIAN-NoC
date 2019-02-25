@@ -13,6 +13,7 @@ use IEEE.numeric_std.all;
 
 package ConnectionPack is
 
+--just for test
 --Type IntVector is array (natural range <>) of integer;
 -- Type SignedArr is array (natural range <>) of Signed(natural range <>); --(DataWidth-1 Downto 0);
 
