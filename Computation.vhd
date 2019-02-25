@@ -1,8 +1,8 @@
 -- NOCSynSim
 -- Network on a Chip Synthesisable and Simulation VHDL Model
--- Version: 1.0 
+-- Version: 1.0
 -- Last Update: 2006/10/04
--- Sharif University of Technology
+-- University of Tehran
 -- Computer Department
 -- High Performance Computing Group - Dr.Sarbazi Azad
 -- Author: D.Rahmati
@@ -72,7 +72,7 @@ Begin
                write(my_line, string'("  , Total Pack Number:"));   -- formatting
                write(my_line, To_Integer(PackGenNum)*RowNo*ColNo);   -- formatting
                writeline(output, my_line);               -- write to "output"
-              -- write(my_line, string'("four_32 = "));    -- formatting 
+              -- write(my_line, string'("four_32 = "));    -- formatting
               -- hwrite(my_line, four_32); -- format type std_logic_vector as hex
               -- write(my_line, string'("  counter= "));
               --- write(my_line, counter);  -- format 'counter' as integer
@@ -81,7 +81,7 @@ Begin
               -- writeline(output, my_line);              -- write to display
                wait;
              end process my_print;
-		
+
 		StopOut <= '1' When (SentAllCnt>=TotalPacks) And (ReceAllCnt>=TotalPacks) Else '0';
 		Fault	<= '1' When	(SentAllCnt<ReceAllCnt)	Else '0';
 		fw1: WriteFile(	FileName	=> "SentCount.txt",
@@ -90,21 +90,21 @@ Begin
 						Stop		=> Stop,
 						Input		=> TDataSent,
 						Finished	=> WriteFin1);
-					
+
 		fw2: WriteFile(	FileName	=> "ReceCount.txt",
 						Clock		=> Clk,
 						WriteEn		=> WriteReceCnt,
 						Stop		=> Stop,
 						Input		=> TDataRece,
 						Finished	=> WriteFin2);
-		
+
 		fw3: WriteFile(	FileName	=> "AverageTime.txt",
 						Clock		=> Clk,
 						WriteEn		=> WriteAveTimeRece,
 						Stop		=> Stop,
 						Input		=> TDataAveTime,
 						Finished	=> WriteFin3);
-		
+
 		TDataSent(1) <= To_Integer(PreSentAllCnt);
 		TDataRece(1) <= To_Integer(PreReceAllCnt);
 		TDataAveTime(1) <= To_Integer(PreAveReceTimeAll);
@@ -116,12 +116,12 @@ Begin
 				For i in 0 to RowNo*ColNo-1 loop
 					If (PackGen(i)='1') Then
 						VTotalPacks := VTotalPacks + To_Integer(PackGenNum);
-					End If;	
+					End If;
 				End Loop;
 				TotalPacks <= VTotalPacks;
 				Wait;
 		End Process;
-												
+
 		--'$display('Rece Count is %d', ReceAllCnt);
 
 		Process (Clk)
@@ -152,7 +152,7 @@ Begin
 						--
 					End loop;
 					SentAllCnt <= VSentAllCnt;
-					ReceAllCnt <= VReceAllCnt; 
+					ReceAllCnt <= VReceAllCnt;
 					--AveReceTimeAll <= To_Unsigned(To_Integer(VSumAveReceTime/(RowNo*ColNo)),20);
 					If (NumberVar/=0) Then
 						AveReceTimeAll <= To_Unsigned(To_Integer(VSumAveReceTime/(NumberVar)),20);
@@ -167,32 +167,32 @@ Begin
 						WriteSentCnt <= '1';
 					Else
 						WriteSentCnt <= '0';
-					End If;					
+					End If;
 					If (PreReceAllCnt/=ReceAllCnt) Then
             			--REPORT "Received Packs:" & String(ReceAllCnt);
-            			
+
             			If((ReceAllCnt mod 100)=0) Or (ReceAllCnt>=To_Integer(PackGenNum)*RowNo*ColNo) Then
-							write(my_line, string'("Rece Pack Cnt: "));   -- formatting            			
+							write(my_line, string'("Rece Pack Cnt: "));   -- formatting
 							write(my_line, To_Integer(ReceAllCnt));   -- formatting
-							write(my_line, string'("   , Ave Pack Delay: "));   -- formatting            			
+							write(my_line, string'("   , Ave Pack Delay: "));   -- formatting
 							write(my_line, To_Integer(AveReceTimeAll));   -- formatting
 							writeline(output, my_line);               -- write to "output"
 						End If;
-						
 
-						
+
+
 						WriteReceCnt <= '1';
 					Else
 						WriteReceCnt <= '0';
-					End If;					
+					End If;
 					If (PreAveReceTimeAll/=AveReceTimeAll) Then
 						WriteAveTimeRece <= '1';
 					Else
 						WriteAveTimeRece <= '0';
-					End If;					
-				End If;	
+					End If;
+				End If;
 			End If;
 		End Process;
 
-		
+
 End;
